@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>baikeSearch</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+      <div class="container">
+
+      <form class="form-signin">
+        <h2 class="form-signin-heading">查询</h2>
+        <input type="text" id="inputMessage" class="form-control" placeholder="关键词" autofocus>
+        <button class="btn btn-lg btn-primary btn-block" type="button" onclick="searchIt()">搜索</button>
+		<h4 class="form-signin-heading" id="showMessage"></h4>
+		<div class="panel-group" id="accordion">
+		<!--
+		  <div class="panel panel-default">
+			<div class="panel-heading">
+			  <h4 class="panel-title">
+				<a data-toggle="collapse" data-parent="#accordion"
+				  href="#collapseThree">
+				  点击我进行展开，再次点击我进行折叠。第 3 部分
+				</a>
+			  </h4>
+			</div>
+			<div id="collapseThree" class="panel-collapse collapse">
+			  <div class="panel-body">
+				Nihil anim keffiyeh helvetica, craft beer labore wes anderson
+				cred nesciunt sapiente ea proident. Ad vegan excepteur butcher
+				vice lomo.
+			  </div>
+			</div>
+		  </div>
+		  -->
+		</div>
+		<div id="changeData">
+			<form class="form-horizontal" role="form">
+			   <div class="form-group">
+				  <label for="firstname" class="col-sm-2 control-label">姓名</label>
+				  <div class="col-sm-10">
+					 <input type="text" class="form-control" id="firstname" 
+						placeholder="请输入名字">
+				  </div>
+			   </div>
+			   <div class="form-group">
+				  <label for="lastname" class="col-sm-2 control-label">身份证号</label>
+				  <div class="col-sm-10">
+					 <input type="text" class="form-control" id="lastname" 
+						placeholder="请输入姓">
+				  </div>
+			   </div>
+			   <div class="form-group">
+				  <div class="col-sm-offset-2 col-sm-10">
+						<button type="button" class="btn btn-default" onclick="showPage(1)">返回</button>
+						<button type="button" class="btn btn-default" onclick="submitChange()">保存</button>
+				  </div>
+			   </div>
+			</form>
+		</div>
+      </form>
+
+    </div> <!-- /container -->
+    <script src="js/jquery-1.12.0.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+	<script>
+		showPage(1);
+		var outputLabel=$("#showMessage");
+		
+		//搜索
+		function searchIt(){
+			var keyword=$("#inputMessage").val();
+			var url=$("#inputUrl").val();
+			$.ajax({
+                type: "get",
+				url: "http://121.42.187.116:81/Service1.svc/GetPersonData?keyword="+keyword,
+                //url: "http://localhost:61723/Service1.svc/GetPersonData?keyword="+keyword,
+                dataType: "jsonp",
+                success: function (data) {
+					console.log(data)
+					showPersonData(data);
+                }
+            });
+			$("#inputMessage").focus();
+		}
+		
+		var personData=null;
+		
+		//显示数据
+		function showPersonData(data){
+			showPage(1);
+			personData=data;
+			var maindiv=$("#accordion");
+			maindiv.html("");
+			for(i in data){
+				var partdiv=$('<div class="panel panel-default"></div>').appendTo(maindiv);
+				var headdiv=$('<div class="panel-heading"></div>').appendTo(partdiv);
+				var head=$('<h4 class="panel-title"></h4>').appendTo(headdiv);
+				var headtitle=$('<a data-toggle="collapse" data-parent="#accordion" href="#a'+data[i]["id"]+'">'+data[i]["name"]+'</a>').appendTo(head);
+				var bodydiv=$('<div id="a'+data[i]["id"]+'" class="panel-collapse collapse"></div>').appendTo(partdiv);
+				var body=$('<div class="panel-body">' +
+					'<p>姓名 : ' + data[i]["name"] + '</p>' +
+					'<p>身份证号 : ' + data[i]["idnum"] + '</p>' +
+					'<p>学号 : ' + data[i]["sid"] + '</p>' +
+					'<p>手机号 : ' + data[i]["phonenum"] + '</p>' +
+					'<p>email : ' + data[i]["email"] + '</p>' +
+					'<p>qq : ' + data[i]["qq"] + '</p>' +
+					'<p>住址 : ' + data[i]["address"] + '</p>' +
+					'<p>公司 : ' + data[i]["company"] + '</p>' +
+					'<p>其他 : ' + data[i]["other"] + '</p>' +
+					'</div>').appendTo(bodydiv);
+				var thechange=$('<a href="javascript:changeIt('+i+');">[修改]</a>').appendTo(head);
+				//var button=$('<button class="btn btn-lg btn-primary btn-block" type="button" onclick="changeIt('+i+')">修改</button>').appendTo(headdiv);
+			}
+		}
+		
+		function changeIt(no){
+			showPage(2);
+			var maindiv=$("#changeData");
+			maindiv.html("");
+			var oldData=personData[no];			
+			var form=$('<form class="form-horizontal" role="form"></form>').appendTo(maindiv);
+			$('<div class="form-group"><label class="col-sm-2 control-label">姓名</label><div class="col-sm-10"><input type="text" class="form-control" id="name" value="'+oldData["name"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">身份证号</label><div class="col-sm-10"><input type="text" class="form-control" id="idnum" value="'+oldData["idnum"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">学号</label><div class="col-sm-10"><input type="text" class="form-control" id="sid" value="'+oldData["sid"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">手机号</label><div class="col-sm-10"><input type="text" class="form-control" id="phonenum" value="'+oldData["phonenum"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">email</label><div class="col-sm-10"><input type="text" class="form-control" id="email" value="'+oldData["email"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">qq</label><div class="col-sm-10"><input type="text" class="form-control" id="qq" value="'+oldData["qq"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">住址</label><div class="col-sm-10"><input type="text" class="form-control" id="address" value="'+oldData["address"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">公司</label><div class="col-sm-10"><input type="text" class="form-control" id="company" value="'+oldData["company"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><label class="col-sm-2 control-label">其他</label><div class="col-sm-10"><input type="text" class="form-control" id="other" value="'+oldData["other"]+'"></div></div>').appendTo(form);
+			$('<div class="form-group"><div class="col-sm-offset-2 col-sm-10"><button type="button" class="btn btn-default" onclick="showPage(1)">返回</button><button type="button" class="btn btn-default" onclick="submitChange('+no+')">保存</button></div></div>').appendTo(form);
+		}
+		
+		function submitChange(no){
+			$.ajax({
+                type: "get",
+				contentType:"application/json",
+				url: "http://121.42.187.116:81/Service1.svc/UpdatePersonData?personstr="+
+                //url: "http://localhost:61723/Service1.svc/UpdatePersonData?personstr="+
+					JSON.stringify(
+					{
+						'id':personData[no]["id"],
+						'name':$("#name").val(),
+						'idnum':$("#idnum").val(),
+						'sid':$("#sid").val(),
+						'phonenum':$("#phonenum").val(),
+						'email':$("#email").val(),
+						'qq':$("#qq").val(),
+						'address':$("#address").val(),
+						'company':$("#company").val(),
+						'other':$("#other").val()
+					}
+				),
+                dataType: "jsonp",
+                success: function (data) {
+					//console.log(data)
+					searchIt();
+					//showPersonData(data);
+                }
+            });
+			
+		}
+		
+		function showPage(no){
+			if(no==1){
+				$("#accordion").show();
+				$("#changeData").hide();
+			}else if(no==2){
+				$("#accordion").hide();
+				$("#changeData").show();
+			}
+		}
+		
+	</script>
+  </body>
+</html>
